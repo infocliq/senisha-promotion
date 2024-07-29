@@ -1,3 +1,59 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to deploy from
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.LS_SSH_KEY }}
+
+    - name: Copy files to EC2
+      run: |
+        rsync -avz --delete --exclude '.git' ./ ${{ secrets.LS_USER }}@${{ secrets.LS_PUBLIC_IP }}:/var/www/senisha-promotion/
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+    - name: Restart server
+      run: |
+        ssh ${{ secrets.LS_USER }}@${{ secrets.LS_PUBLIC_IP }} <<EOF
+        cd /var/www/senisha-promotion/
+        # Add any commands needed to restart your application/server
+        sudo systemctl restart nginx  # Example command
+        EOF
+      env:
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 name: Deploy to EC2 senisha promotion app
 
 on:
